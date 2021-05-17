@@ -1,0 +1,2 @@
+dotnet publish CryptoExperiments\CryptoExperiments.csproj -c Release -f net5.0 -o "C:/Users/serge/Source/Repos/CryptoExperiments/CryptoExperiments/bin/Release/net5.0/publish" -r linux-x64
+docker cp "C:/Users/serge/Source/Repos/CryptoExperiments/CryptoExperiments/bin/Release/net5.0/publish/." friendly_rhodes:/root/cryptoexperiments/
