@@ -1,6 +1,5 @@
 ﻿namespace CryptoExperiments
 {
-    using System;
     using System.Runtime.InteropServices;
     using CryptoExperiments.Corefx.Common.Interop.Linux;
 
@@ -11,15 +10,11 @@
             var providerId = 80;
             var hProv = this.TryGetProvider(providerId);
 
-            var hashAlgorithmId = (int)0x8021;
+            var hashAlgorithmId = 0x8021;
 
             using (var hashProvider = CreateHashProvider(hProv, hashAlgorithmId))
             {
-                if (!Interop.Libcapi20.CryptHashData(
-                    hashProvider.HashHandle,
-                    data,
-                    data.Length,
-                    0))
+                if (!Interop.Libcapi20.CryptHashData(hashProvider.HashHandle, data, data.Length, 0))
                 {
                     throw Marshal.GetLastWin32Error().ToCryptographicException();
                 }

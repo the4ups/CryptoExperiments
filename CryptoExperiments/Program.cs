@@ -2,6 +2,7 @@
 {
     using System;
     using System.Runtime.InteropServices;
+    using System.Security.Cryptography.X509Certificates;
     using System.Text;
 
     internal partial class Program
@@ -15,6 +16,8 @@
             var hash = api.ComputeHash(string.Empty, Encoding.UTF8.GetBytes("Hello world!"));
 
             Console.WriteLine($"Hash: {Convert.ToBase64String(hash)}");
+
+            api.FindByThumbprint(Convert.FromHexString("a"));
         }
     }
 }
