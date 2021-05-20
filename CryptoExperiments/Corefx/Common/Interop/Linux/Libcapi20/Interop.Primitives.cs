@@ -44,6 +44,12 @@
             None                                            = 0x00000000,
         }
 
+        [Flags]
+        internal enum CertFindFlags : int
+        {
+            None = 0x00000000,
+        }
+
         internal enum CertFindType : int
         {
             CERT_FIND_SUBJECT_CERT = 0x000b0000,
