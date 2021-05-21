@@ -20,9 +20,9 @@
             Console.WriteLine();
 
             Console.WriteLine("================= Certs store reading ======================");
-            var c = api.FindCertificate();
-            Console.WriteLine(c?.SerialNumber);
-            Console.WriteLine(c?.SubjectName.ToString());
+            var c = api.FindByThumbprint(Convert.FromHexString("68da674f6c7c1eb57a2ec53becb0892a9247d632"));
+            Console.WriteLine($"Subject: {c?.SubjectName.Name}, Private key:{c?.HasPrivateKey}, " +
+                              $"Thumbrint: {c?.Thumbprint}, Serial: {c?.SerialNumber}");
         }
     }
 }

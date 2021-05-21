@@ -8,10 +8,7 @@
         internal partial class Libcapi20
         {
 
-            [DllImport(
-                Corefx.Common.Interop.Linux.Interop.Libraries.Libcapi20,
-                CharSet = CharSet.Unicode,
-                SetLastError = true)]
+            [DllImport(Corefx.Common.Interop.Linux.Interop.Libraries.Libcapi20, SetLastError = true)]
             internal static extern SafeCertStoreHandle CertOpenStore(
                 IntPtr lpszStoreProvider,
                 CertEncodingType dwMsgAndCertEncodingType,

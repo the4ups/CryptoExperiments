@@ -2,18 +2,6 @@
 {
     using System;
     using System.Runtime.InteropServices;
-    using Microsoft.Win32.SafeHandles;
-    using System.ComponentModel;
-    using System.Diagnostics;
-    using System.Runtime.InteropServices;
-    using System.Runtime.CompilerServices;
-    using System.Runtime.Versioning;
-    using System.Runtime.ConstrainedExecution;
-    using System.Security;
-    using System.Security.Cryptography;
-    using System.Security.Cryptography.X509Certificates;
-
-    using FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
 
     internal static partial class Interop
     {
