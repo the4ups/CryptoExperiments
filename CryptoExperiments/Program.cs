@@ -22,6 +22,7 @@
             Console.WriteLine("================= Certs store reading ======================");
             var c = api.FindCertificate();
             Console.WriteLine(c?.SerialNumber);
+            Console.WriteLine(c?.SubjectName.ToString());
         }
     }
 }

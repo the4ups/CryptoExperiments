@@ -13,13 +13,7 @@
             unsafe
             {
                 // 0) Открываем хранилище
-                var systemStoreHandle = Interop.Libcapi20.CertOpenStore(
-                    Interop.CertStoreProvider.CERT_STORE_PROV_SYSTEM_W,
-                    Interop.CertEncodingType.All,
-                    IntPtr.Zero,
-                    Interop.CertStoreFlags.CERT_STORE_READONLY_FLAG | Interop.CertStoreFlags.CERT_SYSTEM_STORE_CURRENT_USER,
-                    "ROOT"
-                );
+                var systemStoreHandle = Interop.Libcapi20.CertOpenSystemStoreA(IntPtr.Zero, "ROOT");
 
                 if (systemStoreHandle.IsInvalid)
                 {
@@ -34,8 +28,14 @@
                     ref pCertContext))
                 {
                     Console.WriteLine("1");
-                    X509Certificate2 pCert = new X509Certificate2(pCertContext.DangerousGetHandle());
-                    return pCert;
+
+                    var contextCert =
+                        Marshal.PtrToStructure<Interop.Libcapi20.CERT_CONTEXT>(pCertContext.DangerousGetHandle());
+                    var ctx = new byte[contextCert.cbCertEncoded];
+                    Marshal.Copy((IntPtr)contextCert.pbCertEncoded, ctx, 0, ctx.Length);
+
+                    return new X509Certificate2(ctx);
+
                     // if (filter != null && !filter(state, pCertContext))
                     // {
                     //     continue;

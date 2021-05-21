@@ -12,8 +12,13 @@ RUN tar -zxf /tmp/linux-amd64.tgz -C /tmp \
         && rm -rf /tmp/linux-amd64
 
 RUN /opt/cprocsp/sbin/amd64/cpconfig -license -view
+COPY test.000 /var/opt/cprocsp/keys/root/test.000
+RUN chmod 700 /var/opt/cprocsp/keys/root/test.000/ \
+    && chmod 600 /var/opt/cprocsp/keys/root/test.000/*
+RUN /opt/cprocsp/bin/amd64/csptest -keyset -enum_cont -verifycontext -fqcn
+RUN /opt/cprocsp/bin/amd64/certmgr -inst -cont '\\.\HDIMAGE\test'
+RUN /opt/cprocsp/bin/amd64/certmgr -list
 #
-
 WORKDIR /app
 
 FROM centos AS build
