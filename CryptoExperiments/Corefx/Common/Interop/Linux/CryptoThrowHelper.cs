@@ -11,9 +11,8 @@
 
         private sealed class LinuxCryptographicException : CryptographicException
         {
-            public LinuxCryptographicException(int hr)
+            public LinuxCryptographicException(int hr) : base(hr)
             {
-                this.HResult = hr;
             }
         }
     }
