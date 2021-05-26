@@ -13,10 +13,10 @@
                 uint cRecipientCert,
                 [In] [MarshalAs(UnmanagedType.LPArray)]
                 IntPtr[] rgpRecipientCert,
-                [In] IntPtr pbToBeEncrypted,
-                uint cbToBeEncrypted,
-                [Out] IntPtr pbEncryptedBlob,
-                ref uint pcbEncryptedBlob);
+                byte[] pbToBeEncrypted,
+                int cbToBeEncrypted,
+                [In] [Out] byte[] pbEncryptedBlob,
+                ref int pcbEncryptedBlob);
         }
     }
 }
