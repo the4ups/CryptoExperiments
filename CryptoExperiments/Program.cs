@@ -25,34 +25,6 @@
             }
         }
 
-        // This is a solution for CSE not to break your app.
-        private static void ExecInAnotherDomain()
-        {
-            AppDomain dom = null;
-
-            try
-            {
-                dom = AppDomain.CreateDomain("newDomain");
-                var p = new MethodParams() { BeenThere = false };
-                var o = (BoundaryLessExecHelper)dom.CreateInstanceAndUnwrap(typeof(BoundaryLessExecHelper).Assembly.FullName, typeof(BoundaryLessExecHelper).FullName);
-                Console.WriteLine("Before call");
-
-                o.DoSomething(p, CausesAccessViolation);
-                Console.WriteLine("After call. param been there? : " + p.BeenThere.ToString()); // never gets to here
-            }
-            catch (Exception exc)
-            {
-                Console.WriteLine($"CSE: {exc.ToString()}");
-            }
-            finally
-            {
-                AppDomain.Unload(dom);
-            }
-
-            Console.ReadLine();
-        }
-
-
         private static void Run()
         {
             var isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);

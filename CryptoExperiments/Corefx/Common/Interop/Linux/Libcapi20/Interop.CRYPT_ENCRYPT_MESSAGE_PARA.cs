@@ -1,6 +1,7 @@
 ﻿namespace CryptoExperiments
 {
     using System;
+    using CryptoExperiments.Corefx.Common.Microsoft.Win32.SafeHandles;
 
     internal static partial class Interop
     {
@@ -10,7 +11,7 @@
             {
                 public int cbSize;
 
-                public CertEncodingType dwMsgEncodingType;
+                public uint dwMsgEncodingType;
 
                 public int hCryptProv;
 

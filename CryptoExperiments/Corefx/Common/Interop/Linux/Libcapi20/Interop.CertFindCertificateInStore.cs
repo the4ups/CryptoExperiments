@@ -48,7 +48,7 @@
                 return !pCertContext.IsInvalid;
             }
 
-            [DllImport("libcapi20.so")]
+            [DllImport(Corefx.Common.Interop.Linux.Interop.Libraries.Libcapi20)]
             public static extern unsafe SafeCertContextHandle CertEnumCertificatesInStore(SafeCertStoreHandle hCertStore, CERT_CONTEXT* pPrevCertContext);
         }
     }

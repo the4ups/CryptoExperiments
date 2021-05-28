@@ -5,24 +5,24 @@
     using System.Security.Cryptography;
     using System.Security.Cryptography.X509Certificates;
     using CryptoExperiments.Corefx.Common.Interop.Linux;
+    using CryptoExperiments.Corefx.Common.Microsoft.Win32.SafeHandles;
 
     public partial class LinuxCryptoApi
     {
         public byte[] Encrypt(X509Certificate2 cert, byte[] document)
         {
             // 0) Инициализация параметров
-            var pParams = new Interop.Libcapi20.CRYPT_ENCRYPT_MESSAGE_PARA
-            {
-                dwMsgEncodingType = Interop.CertEncodingType.All,
-                ContentEncryptionAlgorithm = { pszObjId = this.GetEncodeAlgorithmOid(cert.PublicKey.Oid) },
-            };
+            var encryptionAlgorithm = this.GetEncodeAlgorithmOid(cert.PublicKey.Oid);
+
+            var pParams = new Interop.Libcapi20.CRYPT_ENCRYPT_MESSAGE_PARA();
+
+            // CryptEncryptMessage finishes with access violation when dwMsgEncodingType is default
+            pParams.dwMsgEncodingType = (uint)Interop.CertEncodingType.All;
+            pParams.ContentEncryptionAlgorithm.pszObjId = encryptionAlgorithm.pszOID;
             pParams.cbSize = Marshal.SizeOf(pParams);
 
             try
             {
-                Marshal.StructureToPtr(42, (IntPtr)42, true);
-                Marshal.ReadInt32((IntPtr)42);
-
                 var iLen = 0;
                 if (!Interop.Libcapi20.CryptEncryptMessage(
                     ref pParams,
@@ -58,7 +58,7 @@
             }
         }
 
-        private IntPtr GetEncodeAlgorithmOid(Oid publicKeyOid)
+        private Interop.Libcapi20.CRYPT_OID_INFO GetEncodeAlgorithmOid(Oid publicKeyOid)
         {
             var hProv = 80;
             var providerHandle = TryGetProvider(hProv);
@@ -85,7 +85,7 @@
 
             var oidInfo = CryptFindOIDInfo(provEnumAlgsEx.aiAlgid);
 
-            return oidInfo.pszOID;
+            return oidInfo;
         }
 
         private static T MarshalAs<T>(Span<byte> stackSpan) where T : struct
