@@ -1,9 +1,11 @@
 ﻿namespace CryptoExperiments
 {
     using System;
+    using System.IO;
     using System.Runtime.ExceptionServices;
     using System.Runtime.InteropServices;
     using System.Security;
+    using System.Security.Cryptography.Pkcs;
     using System.Text;
     using System.Threading.Tasks;
 
@@ -47,9 +49,22 @@
             Console.WriteLine();
 
             Console.WriteLine("================= Encrypt ======================");
-            var encryptedTestData = api.Encrypt(c!, testData);
-            Console.WriteLine($"Encrypted test data: {Convert.ToHexString(encryptedTestData)}");
+            Console.WriteLine("Skip while access violation.");
+            // var encryptedTestData = api.Encrypt(c!, testData);
+            // Console.WriteLine($"Encrypted test data: {Convert.ToHexString(encryptedTestData)}");
             Console.WriteLine();
+
+            Console.WriteLine("================= Verify signature ======================");
+
+            var signedContent = File.ReadAllBytes("/tmp/SampleData.txt");
+            var signature = File.ReadAllBytes("/tmp/SampleDataSign.txt");
+
+            var cms = new SignedCms(new ContentInfo(signedContent), true);
+            cms.Decode(signature);
+
+            api.VerifySignature(c!, signedContent, signature, cms.SignerInfos[0].DigestAlgorithm.Value, false);
+            Console.WriteLine();
+
         }
 
         // but it's important that this method is marked

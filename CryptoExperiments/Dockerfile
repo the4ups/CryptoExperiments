@@ -15,9 +15,13 @@ RUN /opt/cprocsp/sbin/amd64/cpconfig -license -view
 COPY test.000 /var/opt/cprocsp/keys/root/test.000
 RUN chmod 700 /var/opt/cprocsp/keys/root/test.000/ \
     && chmod 600 /var/opt/cprocsp/keys/root/test.000/*
-RUN /opt/cprocsp/bin/amd64/csptest -keyset -enum_cont -verifycontext -fqcn
-RUN /opt/cprocsp/bin/amd64/certmgr -inst -cont '\\.\HDIMAGE\test'
+RUN /opt/cprocsp/bin/amd64/csptest -absorb -certs -autoprov
 RUN /opt/cprocsp/bin/amd64/certmgr -list
+
+COPY 'SampleData.txt' /tmp
+RUN /opt/cprocsp/bin/amd64/csptest -sfsign -sign -add -detached -addsigtime -in /tmp/SampleData.txt -out /tmp/SampleDataSign.txt -my test
+RUN /opt/cprocsp/bin/amd64/csptest -sfsign -verify -detached -in /tmp/SampleData.txt -signature /tmp/SampleDataSign.txt -my test
+
 #
 WORKDIR /app
 
