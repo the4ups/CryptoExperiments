@@ -62,9 +62,13 @@
             var cms = new SignedCms(new ContentInfo(signedContent), true);
             cms.Decode(signature);
 
-            api.VerifySignature(c!, signedContent, signature, cms.SignerInfos[0].DigestAlgorithm.Value, false);
+            //api.VerifySignature(c!, signedContent, signature, cms.SignerInfos[0].DigestAlgorithm.Value, false);
             Console.WriteLine();
 
+            Console.WriteLine("================= Make signature ======================");
+
+            var generatedSignature = api.MakeSignature(c!, signedContent);
+            Console.WriteLine($"Generated signature: {Convert.ToHexString(generatedSignature)}");
         }
 
         // but it's important that this method is marked
