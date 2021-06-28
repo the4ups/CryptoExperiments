@@ -42,7 +42,10 @@
             Console.WriteLine();
 
             Console.WriteLine("================= Certs store reading ======================");
-            var c = api.FindByThumbprint(Convert.FromHexString("68da674f6c7c1eb57a2ec53becb0892a9247d632"));
+            var certificates = api.FindByThumbprint(Convert.FromHexString("68da674f6c7c1eb57a2ec53becb0892a9247d632"));
+
+            var c = certificates.Count > 0 ? certificates[0] : null;
+
             Console.WriteLine(
                 $"Subject: {c?.SubjectName.Name}, Private key:{c?.HasPrivateKey}, " +
                 $"Thumbprint: {c?.Thumbprint}, Serial: {c?.SerialNumber}");
@@ -52,7 +55,7 @@
             Console.WriteLine("Skip while access violation.");
             // var encryptedTestData = api.Encrypt(c!, testData);
             // Console.WriteLine($"Encrypted test data: {Convert.ToHexString(encryptedTestData)}");
-            Console.WriteLine();
+            // Console.WriteLine();
 
             Console.WriteLine("================= Verify signature ======================");
 
@@ -61,8 +64,9 @@
 
             var cms = new SignedCms(new ContentInfo(signedContent), true);
             cms.Decode(signature);
+            //cms.CheckSignature(true);
 
-            //api.VerifySignature(c!, signedContent, signature, cms.SignerInfos[0].DigestAlgorithm.Value, false);
+            api.VerifySignature(c!, signedContent, signature, cms.SignerInfos[0].DigestAlgorithm.Value, false);
             Console.WriteLine();
 
             Console.WriteLine("================= Make signature ======================");

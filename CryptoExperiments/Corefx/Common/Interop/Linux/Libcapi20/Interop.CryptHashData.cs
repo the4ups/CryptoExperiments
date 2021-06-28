@@ -7,10 +7,7 @@
     {
         internal partial class Libcapi20
         {
-            [DllImport(
-                Corefx.Common.Interop.Linux.Interop.Libraries.Libcapi20,
-                CharSet = CharSet.Unicode,
-                SetLastError = true)]
+            [DllImport(Corefx.Common.Interop.Linux.Interop.Libraries.Libcapi20, SetLastError = true)]
             public static extern bool CryptHashData(SafeHashHandle hHash, byte[] pbData, int dwDataLen, int dwFlags);
         }
     }

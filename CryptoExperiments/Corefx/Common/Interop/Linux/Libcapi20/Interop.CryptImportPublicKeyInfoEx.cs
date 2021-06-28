@@ -7,10 +7,7 @@
     {
         internal partial class Libcapi20
         {
-            [DllImport(
-                Corefx.Common.Interop.Linux.Interop.Libraries.Libcapi20,
-                CharSet = CharSet.Ansi,
-                SetLastError = true)]
+            [DllImport(Corefx.Common.Interop.Linux.Interop.Libraries.Libcapi20, SetLastError = true)]
             internal static extern unsafe bool CryptImportPublicKeyInfoEx(
                 SafeProvHandle hProvHandle,
                 CertEncodingType dwCertEncodingType,

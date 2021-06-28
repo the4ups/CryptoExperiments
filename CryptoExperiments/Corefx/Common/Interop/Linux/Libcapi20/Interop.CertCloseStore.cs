@@ -29,10 +29,7 @@
                 CERT_CLOSE_STORE_CHECK_FLAG = 0x2,
             }
 
-            [DllImport(
-                Corefx.Common.Interop.Linux.Interop.Libraries.Libcapi20,
-                CharSet = CharSet.Unicode,
-                SetLastError = true)]
+            [DllImport(Corefx.Common.Interop.Linux.Interop.Libraries.Libcapi20, SetLastError = true)]
             internal static extern bool CertCloseStore(IntPtr hCertStore, CertCloseStoreFlags dwFlags = CertCloseStoreFlags.None);
         }
     }

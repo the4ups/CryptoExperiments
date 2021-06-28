@@ -16,7 +16,7 @@
             /// <summary>
             /// Version used for a buffer containing a scalar integer (not an IntPtr)
             /// </summary>
-            [DllImport(Corefx.Common.Interop.Linux.Interop.Libraries.Libcapi20, CharSet = CharSet.Ansi)]
+            [DllImport(Corefx.Common.Interop.Linux.Interop.Libraries.Libcapi20)]
             public static extern IntPtr CryptFindOIDInfo(CryptOidInfoKeyType dwKeyType, ref int pvKey, OidGroup group);
 
             public static CRYPT_OID_INFO FindAlgIdOidInfo(ECC_CURVE_ALG_ID_ENUM algId)

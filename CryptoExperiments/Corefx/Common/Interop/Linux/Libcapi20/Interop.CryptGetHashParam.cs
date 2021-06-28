@@ -18,7 +18,7 @@
                 HP_TLS1PRF_SEED = 0x0007,  // seed for TLS1 PRF
             }
 
-            [DllImport(Corefx.Common.Interop.Linux.Interop.Libraries.Libcapi20, CharSet = CharSet.Unicode, SetLastError = true)]
+            [DllImport(Corefx.Common.Interop.Linux.Interop.Libraries.Libcapi20, SetLastError = true)]
             public static extern bool CryptGetHashParam(
                 SafeHashHandle hHash,
                 CryptHashProperty dwParam,
@@ -26,7 +26,7 @@
                 [In, Out] ref int pdwDataLen,
                 int dwFlags);
 
-            [DllImport(Corefx.Common.Interop.Linux.Interop.Libraries.Libcapi20, CharSet = CharSet.Unicode, SetLastError = true)]
+            [DllImport(Corefx.Common.Interop.Linux.Interop.Libraries.Libcapi20, SetLastError = true)]
             public static extern bool CryptGetHashParam(
                 SafeHashHandle hHash,
                 CryptHashProperty dwParam,
@@ -60,7 +60,7 @@
                 }
             }
 
-            [DllImport(Corefx.Common.Interop.Linux.Interop.Libraries.Libcapi20, CharSet = CharSet.Unicode, SetLastError = true)]
+            [DllImport(Corefx.Common.Interop.Linux.Interop.Libraries.Libcapi20, SetLastError = true)]
             public static extern bool CryptSetHashParam(SafeHashHandle hHash, CryptHashProperty dwParam, byte[] buffer, int dwFlags);
         }
     }

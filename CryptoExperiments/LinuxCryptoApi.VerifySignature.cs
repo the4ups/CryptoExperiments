@@ -28,6 +28,7 @@
                 var signatureToVerify = (byte[])signature.Clone();
                 Array.Reverse(signatureToVerify);
 
+                // here context became invalid
                 using (var certificateContext = CreateCertificateContextHandle(certificate))
                 {
                     using (var hPublicKey = ImportPublicKeyInfo(hProv, certificateContext))
@@ -83,9 +84,9 @@
 
         private static Interop.SafeCertContextHandle CreateCertificateContextHandle(X509Certificate2 certificate)
         {
-            var pCertContext = Interop.Libcapi20.CertDuplicateCertificateContext(certificate.Handle);
-            GC.KeepAlive(certificate);
-            return pCertContext;
+            var safeHandle = new Interop.SafeCertContextHandle();
+            safeHandle.SetHandle(certificate.Handle);
+            return safeHandle.Duplicate();
         }
 
         private static SafeHashHandle CreateHashHandle(SafeProvHandle hProv, int calgHash, byte[] hash)

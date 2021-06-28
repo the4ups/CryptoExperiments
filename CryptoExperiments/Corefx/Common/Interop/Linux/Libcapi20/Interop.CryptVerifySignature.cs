@@ -24,7 +24,7 @@
                 CRYPT_X931_FORMAT = 0x00000004,  // Not supported
             }
 
-            [DllImport(Corefx.Common.Interop.Linux.Interop.Libraries.Libcapi20, CharSet = CharSet.Unicode, SetLastError = true, EntryPoint = "CryptSignHashW")]
+            [DllImport(Corefx.Common.Interop.Linux.Interop.Libraries.Libcapi20, SetLastError = true, EntryPoint = "CryptSignHashW")]
             public static extern bool CryptSignHash(
                 SafeHashHandle hHash,
                 KeySpec dwKeySpec,
@@ -33,7 +33,7 @@
                 [Out] byte[]? pbSignature,
                 [In, Out] ref int pdwSigLen);
 
-            [DllImport(Corefx.Common.Interop.Linux.Interop.Libraries.Libcapi20, CharSet = CharSet.Unicode, SetLastError = true, EntryPoint = "CryptVerifySignatureW")]
+            [DllImport(Corefx.Common.Interop.Linux.Interop.Libraries.Libcapi20, SetLastError = true, EntryPoint = "CryptVerifySignatureW")]
             public static extern bool CryptVerifySignature(
                 SafeHashHandle hHash,
                 byte[] pbSignature,

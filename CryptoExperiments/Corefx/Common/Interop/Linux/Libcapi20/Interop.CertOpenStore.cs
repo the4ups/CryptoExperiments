@@ -10,21 +10,11 @@
 
             [DllImport(Corefx.Common.Interop.Linux.Interop.Libraries.Libcapi20, SetLastError = true)]
             internal static extern SafeCertStoreHandle CertOpenStore(
-                IntPtr lpszStoreProvider,
-                CertEncodingType dwMsgAndCertEncodingType,
-                IntPtr hCryptProv,
-                CertStoreFlags dwFlags,
-                string pvPara);
-
-            public static SafeCertStoreHandle CertOpenStore(
                 CertStoreProvider lpszStoreProvider,
                 CertEncodingType dwMsgAndCertEncodingType,
                 IntPtr hCryptProv,
                 CertStoreFlags dwFlags,
-                string? pvPara)
-            {
-                return CertOpenStore((IntPtr)lpszStoreProvider, dwMsgAndCertEncodingType, hCryptProv, dwFlags, pvPara);
-            }
+                [In, MarshalAs(UnmanagedType.LPStr)] string pvPara);
         }
     }
 }

@@ -8,7 +8,7 @@
 
     public partial class LinuxCryptoApi
     {
-        public unsafe X509Certificate2? FindBySubjectName(string subjectName)
+        public unsafe X509Certificate2Collection FindBySubjectName(string subjectName)
         {
             fixed (char* pSubjectName = subjectName)
             {
@@ -16,7 +16,7 @@
             }
         }
 
-        public unsafe X509Certificate2? FindByIssuerName(string issuerName)
+        public unsafe X509Certificate2Collection FindByIssuerName(string issuerName)
         {
             fixed (char* pIssuerName = issuerName)
             {
@@ -24,7 +24,7 @@
             }
         }
 
-        public unsafe X509Certificate2? FindBySerialNumber(BigInteger hexValue, BigInteger decimalValue)
+        public unsafe X509Certificate2Collection FindBySerialNumber(BigInteger hexValue, BigInteger decimalValue)
         {
             return FindCore(
                 (hexValue, decimalValue),
@@ -40,7 +40,7 @@
                 });
         }
 
-        public unsafe X509Certificate2? FindByThumbprint(byte[] thumbPrint)
+        public unsafe X509Certificate2Collection FindByThumbprint(byte[] thumbPrint)
         {
             fixed (byte* pThumbPrint = thumbPrint)
             {
@@ -49,14 +49,14 @@
             }
         }
 
-        private unsafe X509Certificate2? FindCore<TState>(
+        private unsafe X509Certificate2Collection FindCore<TState>(
             TState state,
             Func<TState, Interop.SafeCertContextHandle, bool> filter)
         {
             return this.FindCore(Interop.CertFindType.CERT_FIND_ANY, null, state, filter);
         }
 
-        private unsafe X509Certificate2? FindCore<TState>(
+        private unsafe X509Certificate2Collection FindCore<TState>(
             Interop.CertFindType dwFindType,
             void* pvFindPara,
             TState state = default!,
@@ -65,6 +65,8 @@
             StoreLocation storeLocation = StoreLocation.CurrentUser,
             StoreName storeName = StoreName.My)
         {
+            X509Certificate2Collection result = new();
+
             var certStore = storeLocation switch
             {
                 StoreLocation.CurrentUser => Interop.CertStoreFlags.CERT_SYSTEM_STORE_CURRENT_USER,
@@ -72,40 +74,56 @@
                 _ => throw new ArgumentOutOfRangeException(nameof(storeLocation), storeLocation, null),
             };
 
-            using (var store = Interop.Libcapi20.CertOpenStore(
+            Interop.SafeCertContextHandle? safeCertContextHandle = null;
+            using (var store = CertOpenStore(storeName, certStore))
+            {
+                while (Interop.Libcapi20.CertFindCertificateInStore(store, dwFindType, pvFindPara, ref safeCertContextHandle))
+                {
+                    if (filter != null && !filter(state, safeCertContextHandle))
+                        continue;
+
+                    // var ptr = safeCertContextHandle.DangerousGetHandle();
+                    // var c = new X509Certificate(ptr);
+
+                    var pCertContext = *safeCertContextHandle.CertContext;
+                    byte[] pbBlob = new byte[pCertContext.cbCertEncoded];
+                    Marshal.Copy((IntPtr)pCertContext.pbCertEncoded, pbBlob, 0, pbBlob.Length);
+
+                    var certificate = new X509Certificate2(
+                        pbBlob,
+                        new System.Security.SecureString(),
+                        X509KeyStorageFlags.PersistKeySet);
+
+                    if (validOnly)
+                    {
+                        if (!certificate.Verify())
+                        {
+                            continue;
+                        }
+                    }
+
+                    result.Add(certificate);
+                }
+            }
+
+            return result;
+        }
+
+        private static Interop.SafeCertStoreHandle CertOpenStore(StoreName storeName, Interop.CertStoreFlags certStore)
+        {
+            var storeHandle = Interop.Libcapi20.CertOpenStore(
                 Interop.CertStoreProvider.CERT_STORE_PROV_SYSTEM_A,
                 Interop.CertEncodingType.All,
                 IntPtr.Zero,
                 certStore,
-                storeName.ToString("G")))
+                storeName.ToString("G"));
+
+            if (storeHandle.IsInvalid)
             {
-                if (store.IsInvalid)
-                {
-                    throw Marshal.GetLastWin32Error().ToCryptographicException();
-                }
-
-                Interop.SafeCertContextHandle? pCertContext = null;
-                while (Interop.Libcapi20.CertFindCertificateInStore(store, dwFindType, pvFindPara, ref pCertContext))
-                {
-                    if (filter != null && !filter(state, pCertContext))
-                        continue;
-
-                    var contextCert = Marshal.PtrToStructure<Interop.Libcapi20.CERT_CONTEXT>(pCertContext.DangerousGetHandle());
-                    var ctx = new byte[contextCert.cbCertEncoded];
-                    Marshal.Copy((IntPtr)contextCert.pbCertEncoded, ctx, 0, ctx.Length);
-
-                    var certificate = new X509Certificate2(ctx);
-
-                    if (validOnly && !certificate.Verify())
-                    {
-                            continue;
-                    }
-
-                    return certificate;
-                }
+                throw Marshal.GetLastWin32Error().ToCryptographicException();
             }
 
-            return null;
+            return storeHandle;
         }
 
         private static BigInteger PositiveBigIntegerFromByteArray(byte[] bytes)

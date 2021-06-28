@@ -17,7 +17,7 @@
             var pParams = new Interop.Libcapi20.CRYPT_ENCRYPT_MESSAGE_PARA();
 
             // CryptEncryptMessage finishes with access violation when dwMsgEncodingType is default
-            pParams.dwMsgEncodingType = (uint)Interop.CertEncodingType.All;
+            //pParams.dwMsgEncodingType = (uint)Interop.CertEncodingType.All;
             pParams.ContentEncryptionAlgorithm.pszObjId = encryptionAlgorithm.pszOID;
             pParams.cbSize = Marshal.SizeOf(pParams);
 

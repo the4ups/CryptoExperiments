@@ -11,8 +11,7 @@
             [DllImport(
                 Corefx.Common.Interop.Linux.Interop.Libraries.Libcapi20,
                 SetLastError = true,
-                EntryPoint = "CryptAcquireContextA",
-                CharSet = CharSet.Unicode)]
+                EntryPoint = "CryptAcquireContextA")]
             internal static extern bool CryptAcquireContext(
                 out SafeProvHandle phProv,
                 string szContainer,

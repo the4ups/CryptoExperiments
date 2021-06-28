@@ -62,22 +62,24 @@
                 throw new PlatformNotSupportedException();
             }
 
-            return new HashProvider
-            {
-                HashSizeInBytes = dwHashSize,
-                HashHandle = hHash
-            };
+            return new HashProvider(dwHashSize, hHash);
         }
 
         internal class HashProvider : IDisposable
         {
-            public int HashSizeInBytes { get; set; }
+            public HashProvider(int hashSizeInBytes, SafeHashHandle hashHandle)
+            {
+                this.HashSizeInBytes = hashSizeInBytes;
+                this.HashHandle = hashHandle;
+            }
 
-            public SafeHashHandle HashHandle { get; set; }
+            public int HashSizeInBytes { get; }
+
+            public SafeHashHandle HashHandle { get; }
 
             public void Dispose()
             {
-                HashHandle?.Dispose();
+                HashHandle.Dispose();
             }
         }
     }

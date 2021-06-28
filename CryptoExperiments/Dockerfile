@@ -3,7 +3,7 @@ RUN dnf update -y
 RUN dnf install -y dotnet-runtime-5.0 lsb
 
 # install csp
-COPY linux-amd64.tgz /tmp
+COPY linux-amd64.tgz /tmp/linux-amd64.tgz
 
 RUN tar -zxf /tmp/linux-amd64.tgz -C /tmp \
         && chmod +x /tmp/linux-amd64/install.sh \
@@ -18,7 +18,7 @@ RUN chmod 700 /var/opt/cprocsp/keys/root/test.000/ \
 RUN /opt/cprocsp/bin/amd64/csptest -absorb -certs -autoprov
 RUN /opt/cprocsp/bin/amd64/certmgr -list
 
-COPY 'SampleData.txt' /tmp
+COPY SampleData.txt /tmp
 RUN /opt/cprocsp/bin/amd64/csptest -sfsign -sign -add -detached -addsigtime -in /tmp/SampleData.txt -out /tmp/SampleDataSign.txt -my test
 RUN /opt/cprocsp/bin/amd64/csptest -sfsign -verify -detached -in /tmp/SampleData.txt -signature /tmp/SampleDataSign.txt -my test
 

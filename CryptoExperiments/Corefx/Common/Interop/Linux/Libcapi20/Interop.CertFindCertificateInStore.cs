@@ -30,7 +30,7 @@
                 return !pCertContext.IsInvalid;
             }
 
-            [DllImport(Corefx.Common.Interop.Linux.Interop.Libraries.Libcapi20, SetLastError = true, CharSet = CharSet.Auto)]
+            [DllImport(Corefx.Common.Interop.Linux.Interop.Libraries.Libcapi20, SetLastError = true)]
             public static extern unsafe SafeCertContextHandle CertFindCertificateInStore(
                 SafeCertStoreHandle hCertStore,
                 CertEncodingType dwCertEncodingType,
