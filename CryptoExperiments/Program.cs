@@ -52,10 +52,10 @@
             Console.WriteLine();
 
             Console.WriteLine("================= Encrypt ======================");
-            Console.WriteLine("Skip while access violation.");
-            // var encryptedTestData = api.Encrypt(c!, testData);
-            // Console.WriteLine($"Encrypted test data: {Convert.ToHexString(encryptedTestData)}");
-            // Console.WriteLine();
+            // Console.WriteLine("Skip while access violation.");
+            var encryptedTestData = api.Encrypt(c!, testData);
+            Console.WriteLine($"Encrypted test data: {Convert.ToHexString(encryptedTestData)}");
+            Console.WriteLine();
 
             Console.WriteLine("================= Verify signature ======================");
 
@@ -66,8 +66,8 @@
             cms.Decode(signature);
             //cms.CheckSignature(true);
 
-            api.VerifySignature(c!, signedContent, signature, cms.SignerInfos[0].DigestAlgorithm.Value, false);
-            Console.WriteLine();
+            // api.VerifySignature(c!, signedContent, signature, cms.SignerInfos[0].DigestAlgorithm.Value, false);
+            // Console.WriteLine();
 
             Console.WriteLine("================= Make signature ======================");
 

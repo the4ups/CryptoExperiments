@@ -18,8 +18,7 @@
 
             try
             {
-                var certContext = new Interop.SafeCertContextHandle();
-                certContext.SetHandle(certificate.Handle);
+                var certContext = FindByThumbprint1(Convert.FromHexString("68da674f6c7c1eb57a2ec53becb0892a9247d632"));
                 Interop.Libcapi20.CryptKeySpec dwKeySpec = 0;
 
                 if (!Interop.Libcapi20.CryptAcquireCertificatePrivateKey(
@@ -87,7 +86,7 @@
 
         private static int GetHashAlgorithmId(string publicKEyOid)
         {
-            return 0x0;
+            return 0x8021;
         }
     }
 }

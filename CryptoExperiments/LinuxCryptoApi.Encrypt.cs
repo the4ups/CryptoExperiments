@@ -11,13 +11,16 @@
     {
         public byte[] Encrypt(X509Certificate2 cert, byte[] document)
         {
+            var safeHandle = FindByThumbprint1(Convert.FromHexString("68da674f6c7c1eb57a2ec53becb0892a9247d632"));
+
+
             // 0) Инициализация параметров
             var encryptionAlgorithm = this.GetEncodeAlgorithmOid(cert.PublicKey.Oid);
 
             var pParams = new Interop.Libcapi20.CRYPT_ENCRYPT_MESSAGE_PARA();
 
             // CryptEncryptMessage finishes with access violation when dwMsgEncodingType is default
-            //pParams.dwMsgEncodingType = (uint)Interop.CertEncodingType.All;
+            pParams.dwMsgEncodingType = (uint)Interop.CertEncodingType.All;
             pParams.ContentEncryptionAlgorithm.pszObjId = encryptionAlgorithm.pszOID;
             pParams.cbSize = Marshal.SizeOf(pParams);
 
@@ -27,7 +30,7 @@
                 if (!Interop.Libcapi20.CryptEncryptMessage(
                     ref pParams,
                     1,
-                    new[] { cert.Handle },
+                    new[] { safeHandle.DangerousGetHandle() },
                     document,
                     document.Length,
                     null,
@@ -40,7 +43,7 @@
                 if (!Interop.Libcapi20.CryptEncryptMessage(
                     ref pParams,
                     1,
-                    new[] { cert.Handle },
+                    new[] { safeHandle.DangerousGetHandle() },
                     document,
                     document.Length,
                     result,

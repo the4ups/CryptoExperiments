@@ -29,7 +29,7 @@
                 Array.Reverse(signatureToVerify);
 
                 // here context became invalid
-                using (var certificateContext = CreateCertificateContextHandle(certificate))
+                using (var certificateContext =  FindByThumbprint1(Convert.FromHexString("68da674f6c7c1eb57a2ec53becb0892a9247d632")))
                 {
                     using (var hPublicKey = ImportPublicKeyInfo(hProv, certificateContext))
                     {

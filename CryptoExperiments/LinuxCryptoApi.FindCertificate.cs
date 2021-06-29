@@ -162,5 +162,32 @@
             Marshal.Copy(blob.pbData, data, 0, length);
             return data;
         }
+
+        internal unsafe Interop.SafeCertContextHandle FindByThumbprint1(byte[] thumbPrint)
+        {
+            fixed (byte* pThumbPrint = thumbPrint)
+            {
+                var blob = new Interop.CRYPTOAPI_BLOB(thumbPrint.Length, pThumbPrint);
+                void* pvFindPara = &blob;
+                X509Certificate2Collection result = new();
+
+                var certStore = StoreLocation.CurrentUser switch
+                {
+                    StoreLocation.CurrentUser => Interop.CertStoreFlags.CERT_SYSTEM_STORE_CURRENT_USER,
+                    StoreLocation.LocalMachine => Interop.CertStoreFlags.CERT_SYSTEM_STORE_LOCAL_MACHINE,
+               };
+
+                Interop.SafeCertContextHandle? safeCertContextHandle = null;
+                using (var store = CertOpenStore(StoreName.My, certStore))
+                {
+                    while (Interop.Libcapi20.CertFindCertificateInStore(store, Interop.CertFindType.CERT_FIND_HASH, pvFindPara, ref safeCertContextHandle))
+                    {
+                        return safeCertContextHandle;
+                    }
+                }
+            }
+
+            throw new InvalidOperationException();
+        }
     }
 }
