@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "CryptoExperiments": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}
