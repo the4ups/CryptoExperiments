@@ -28,41 +28,44 @@
                 var signatureToVerify = (byte[])signature.Clone();
                 Array.Reverse(signatureToVerify);
 
-                // here context became invalid
-                using (var certificateContext =  FindByThumbprint1(Convert.FromHexString("68da674f6c7c1eb57a2ec53becb0892a9247d632")))
+                var certificateContext = Interop.Libcapi20.CertCreateCertificateContext(
+                    Interop.CertEncodingType.All, certificate.RawData, certificate.RawData.Length);
+
+                // var certificateContext =
+                //     FindByThumbprint1(Convert.FromHexString("5AED7061564832AAFB6E00E759C4651263004EAD"));
+
+                using (var hPublicKey = ImportPublicKeyInfo(hProv, certificateContext))
                 {
-                    using (var hPublicKey = ImportPublicKeyInfo(hProv, certificateContext))
+                    if (!Interop.Libcapi20.CryptVerifySignature(
+                        hHash,
+                        signatureToVerify,
+                        signatureToVerify.Length,
+                        hPublicKey,
+                        null,
+                        Interop.Libcapi20.CryptSignAndVerifyHashFlags.None))
                     {
-                        if (!Interop.Libcapi20.CryptVerifySignature(
-                            hHash,
-                            signatureToVerify,
-                            signatureToVerify.Length,
-                            hPublicKey,
-                            null,
-                            Interop.Libcapi20.CryptSignAndVerifyHashFlags.None))
-                        {
-                            throw Marshal.GetLastWin32Error().ToCryptographicException();
-                        }
+                        throw Marshal.GetLastWin32Error().ToCryptographicException();
                     }
                 }
             }
         }
 
-        private static SafeKeyHandle ImportPublicKeyInfo(
+        private SafeKeyHandle ImportPublicKeyInfo(
             SafeProvHandle hProv,
             Interop.SafeCertContextHandle certContext)
         {
             unsafe
             {
                 var mustRelease = false;
-                certContext.DangerousAddRef(ref mustRelease);
+                // certContext.DangerousAddRef(ref mustRelease);
 
                 try
                 {
                     if (!Interop.Libcapi20.CryptImportPublicKeyInfoEx(
                         hProv,
                         Interop.CertEncodingType.All,
-                        &certContext.CertContext->pCertInfo->SubjectPublicKeyInfo,
+                        &(certContext.CertContext)->pCertInfo->SubjectPublicKeyInfo,
+                        0,
                         0,
                         null,
                         out var hPublicKey))
@@ -86,7 +89,7 @@
         {
             var safeHandle = new Interop.SafeCertContextHandle();
             safeHandle.SetHandle(certificate.Handle);
-            return safeHandle.Duplicate();
+            return safeHandle;
         }
 
         private static SafeHashHandle CreateHashHandle(SafeProvHandle hProv, int calgHash, byte[] hash)

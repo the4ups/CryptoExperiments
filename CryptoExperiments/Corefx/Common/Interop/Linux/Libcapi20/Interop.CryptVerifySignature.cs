@@ -33,7 +33,7 @@
                 [Out] byte[]? pbSignature,
                 [In, Out] ref int pdwSigLen);
 
-            [DllImport(Corefx.Common.Interop.Linux.Interop.Libraries.Libcapi20, SetLastError = true, EntryPoint = "CryptVerifySignatureW")]
+            [DllImport(Corefx.Common.Interop.Linux.Interop.Libraries.Libcapi20, SetLastError = true, EntryPoint = "CryptVerifySignatureA")]
             public static extern bool CryptVerifySignature(
                 SafeHashHandle hHash,
                 byte[] pbSignature,

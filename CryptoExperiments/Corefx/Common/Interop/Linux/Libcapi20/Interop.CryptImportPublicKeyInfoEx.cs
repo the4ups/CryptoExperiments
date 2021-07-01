@@ -13,6 +13,15 @@
                 CertEncodingType dwCertEncodingType,
                 CERT_PUBLIC_KEY_INFO* pInfo,
                 int aiKeyALg,
+                uint dwFlags,
+                void* pvAuxInfo,
+                out SafeKeyHandle phKey);
+
+            [DllImport(Corefx.Common.Interop.Linux.Interop.Libraries.Libcapi20, SetLastError = true)]
+            internal static extern unsafe bool CryptImportPublicKeyInfo(
+                SafeProvHandle hProvHandle,
+                CertEncodingType dwCertEncodingType,
+                CERT_PUBLIC_KEY_INFO* pInfo,
                 void* pvAuxInfo,
                 out SafeKeyHandle phKey);
         }

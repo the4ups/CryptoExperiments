@@ -18,15 +18,14 @@
 
             try
             {
-                var certContext = FindByThumbprint1(Convert.FromHexString("68da674f6c7c1eb57a2ec53becb0892a9247d632"));
-                Interop.Libcapi20.CryptKeySpec dwKeySpec = 0;
+                var certContext = FindByThumbprint1(Convert.FromHexString("5AED7061564832AAFB6E00E759C4651263004EAD"));
 
                 if (!Interop.Libcapi20.CryptAcquireCertificatePrivateKey(
                     certContext,
                     Interop.Libcapi20.CryptAcquireCertificatePrivateKeyFlags.CRYPT_ACQUIRE_COMPARE_KEY_FLAG,
                     IntPtr.Zero,
                     out hProv,
-                    out dwKeySpec,
+                    out var dwKeySpec,
                     out fCallerFreeProv))
                 {
                     throw Marshal.GetLastWin32Error().ToCryptographicException();
