@@ -6,7 +6,6 @@
     using System.Runtime.InteropServices;
     using System.Security;
     using System.Security.Cryptography.Pkcs;
-    using System.Text;
     using System.Threading.Tasks;
 
     internal partial class Program
@@ -34,7 +33,7 @@
 
             var api = new LinuxCryptoApi();
 
-            var testData = Encoding.UTF8.GetBytes("Hello world!");
+            var testData = File.ReadAllBytes("/tmp/SampleData.txt");
 
             Console.WriteLine("================= Hashing ======================");
             var hash = api.ComputeHash(string.Empty, testData);
@@ -56,22 +55,42 @@
             Console.WriteLine($"Encrypted test data: {Convert.ToHexString(encryptedTestData)}");
             Console.WriteLine();
 
-            Console.WriteLine("================= Verify signature ======================");
+            Console.WriteLine("================= Make signature ======================");
 
-            var signedContent = File.ReadAllBytes("/tmp/SampleData.txt");
+            var generatedSignature = api.MakeSignature(c!, testData);
+            Console.WriteLine($"Generated signature: {Convert.ToHexString(generatedSignature)}");
+            Console.WriteLine();
+
+            Console.WriteLine("================= Verify signature generated with MakeSignature ======================");
+
+            api.VerifySignature(
+                c!,
+                testData,
+                generatedSignature,
+                "",
+                false);
+            Console.WriteLine("Verification success!");
+            Console.WriteLine();
+
+            Console.WriteLine("================= Verify signature generated with CSP ======================");
+
             var signature = File.ReadAllBytes("/tmp/SampleDataSign.txt");
 
-            var cms = new SignedCms(new ContentInfo(signedContent), true);
+            var cmsAsBase64 = Convert.ToBase64String(signature);
+            Console.WriteLine($"CMS as base64: {cmsAsBase64}");
+
+            var cms = new SignedCms(new ContentInfo(testData), true);
             cms.Decode(signature);
             //cms.CheckSignature(true);
 
-            api.VerifySignature(c!, signedContent, signature, cms.SignerInfos[0].DigestAlgorithm.Value, false);
+            api.VerifySignature(
+                cms.SignerInfos[0].Certificate,
+                testData,
+                cms.SignerInfos[0].GetSignature(),
+                cms.SignerInfos[0].DigestAlgorithm.Value,
+                false);
+            Console.WriteLine("Verification success!");
             Console.WriteLine();
-
-            Console.WriteLine("================= Make signature ======================");
-
-            var generatedSignature = api.MakeSignature(c!, signedContent);
-            Console.WriteLine($"Generated signature: {Convert.ToHexString(generatedSignature)}");
         }
 
         // but it's important that this method is marked

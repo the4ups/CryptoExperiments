@@ -42,6 +42,15 @@
                     throw Marshal.GetLastWin32Error().ToCryptographicException();
                 }
 
+                if (!Interop.Libcapi20.CryptHashData(
+                    hHash,
+                    content,
+                    content.Length,
+                    0))
+                {
+                    throw Marshal.GetLastWin32Error().ToCryptographicException();
+                }
+
                 int dwSigLen = 0;
                 if (!Interop.Libcapi20.CryptSignHash(
                     hHash,
