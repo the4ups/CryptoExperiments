@@ -8,7 +8,7 @@
     using System.Security.Cryptography.Pkcs;
     using System.Threading.Tasks;
 
-    internal partial class Program
+    internal class Program
     {
         public static void Main(string[] args)
         {
