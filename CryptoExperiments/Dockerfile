@@ -19,7 +19,7 @@ RUN /opt/cprocsp/bin/amd64/csptest -absorb -certs -autoprov
 RUN /opt/cprocsp/bin/amd64/certmgr -list
 
 COPY SampleData.txt /tmp
-RUN /opt/cprocsp/bin/amd64/csptest -sfsign -sign -add -detached -addsigtime -in /tmp/SampleData.txt -out /tmp/SampleDataSign.txt -my test
+RUN /opt/cprocsp/bin/amd64/csptest -sfsign -sign -add -detached -cades_disable -in /tmp/SampleData.txt -out /tmp/SampleDataSign.txt -my test
 RUN /opt/cprocsp/bin/amd64/csptest -sfsign -verify -detached -in /tmp/SampleData.txt -signature /tmp/SampleDataSign.txt -my test
 
 #
