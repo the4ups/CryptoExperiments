@@ -2,31 +2,12 @@
 {
     using System;
     using System.IO;
-    using System.Runtime.ExceptionServices;
     using System.Runtime.InteropServices;
-    using System.Security;
     using System.Security.Cryptography.Pkcs;
-    using System.Threading.Tasks;
 
     internal class Program
     {
         public static void Main(string[] args)
-        {
-            try
-            {
-                AppDomain.CurrentDomain.UnhandledException += UnhandledException;
-
-                var t = new Task(Run);
-                t.Start();
-                t.Wait();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
-        }
-
-        private static void Run()
         {
             var isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
             Console.WriteLine($"Is linux: {isLinux}");
@@ -46,8 +27,8 @@
             var c = certificates.Count > 0 ? certificates[0] : null;
 
             Console.WriteLine(
-                $"Subject: {c?.SubjectName.Name}, Private key:{c?.HasPrivateKey}, " +
-                $"Thumbprint: {c?.Thumbprint}, Serial: {c?.SerialNumber}");
+                $"Subject: {c?.X509Certificate2.SubjectName.Name}, Private key:{c?.ContainsPrivateKey}, " +
+                $"Thumbprint: {c?.X509Certificate2.Thumbprint}, Serial: {c?.X509Certificate2.SerialNumber}");
             Console.WriteLine();
 
             Console.WriteLine("================= Encrypt ======================");
@@ -64,7 +45,7 @@
             Console.WriteLine("================= Verify signature generated with MakeSignature ======================");
 
             api.VerifySignature(
-                c!,
+                c!.X509Certificate2,
                 testData,
                 generatedSignature,
                 "",
@@ -91,15 +72,6 @@
                 false);
             Console.WriteLine("Verification success!");
             Console.WriteLine();
-        }
-
-        // but it's important that this method is marked
-        [SecurityCritical]
-        [HandleProcessCorruptedStateExceptions]
-        private static void UnhandledException(object sender, UnhandledExceptionEventArgs e)
-        {
-            // this will catch all unhandled exceptions, including CSEs
-            Console.WriteLine(e.ExceptionObject as Exception);
         }
     }
 }

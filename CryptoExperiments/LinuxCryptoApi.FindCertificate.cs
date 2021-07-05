@@ -1,6 +1,7 @@
 ﻿namespace CryptoExperiments
 {
     using System;
+    using System.Collections.Generic;
     using System.Numerics;
     using System.Runtime.InteropServices;
     using System.Security.Cryptography.X509Certificates;
@@ -8,64 +9,110 @@
 
     public partial class LinuxCryptoApi
     {
-        public unsafe X509Certificate2Collection FindBySubjectName(string subjectName)
+        public unsafe IList<IX509Certificate> FindBySubjectName(
+            string subjectName,
+            bool validOnly = false,
+            StoreLocation storeLocation = StoreLocation.CurrentUser,
+            StoreName storeName = StoreName.My)
         {
             fixed (char* pSubjectName = subjectName)
             {
-                return FindCore<object>(Interop.CertFindType.CERT_FIND_SUBJECT_STR, pSubjectName);
+                return this.FindCore<object>(
+                    Interop.CertFindType.CERT_FIND_SUBJECT_STR,
+                    pSubjectName,
+                    validOnly,
+                    storeLocation,
+                    storeName);
             }
         }
 
-        public unsafe X509Certificate2Collection FindByIssuerName(string issuerName)
+        public unsafe IList<IX509Certificate> FindByIssuerName(
+            string issuerName,
+            bool validOnly = false,
+            StoreLocation storeLocation = StoreLocation.CurrentUser,
+            StoreName storeName = StoreName.My)
         {
             fixed (char* pIssuerName = issuerName)
             {
-                return FindCore<object>(Interop.CertFindType.CERT_FIND_ISSUER_STR, pIssuerName);
+                return this.FindCore<object>(
+                    Interop.CertFindType.CERT_FIND_ISSUER_STR,
+                    pIssuerName,
+                    validOnly,
+                    storeLocation,
+                    storeName);
             }
         }
 
-        public unsafe X509Certificate2Collection FindBySerialNumber(BigInteger hexValue, BigInteger decimalValue)
+        public unsafe IList<IX509Certificate> FindBySerialNumber(
+            BigInteger hexValue,
+            BigInteger decimalValue,
+            bool validOnly = false,
+            StoreLocation storeLocation = StoreLocation.CurrentUser,
+            StoreName storeName = StoreName.My)
         {
-            return FindCore(
+            return this.FindCore(
                 (hexValue, decimalValue),
-                static (state, pCertContext) =>
+                static(state, pCertContext) =>
                 {
                     byte[] actual = ToByteArray(pCertContext.CertContext->pCertInfo->SerialNumber);
                     GC.KeepAlive(pCertContext);
 
                     // Convert to BigInteger as the comparison must not fail due to spurious leading zeros
-                    BigInteger actualAsBigInteger = PositiveBigIntegerFromByteArray(actual);
+                    var actualAsBigInteger = PositiveBigIntegerFromByteArray(actual);
 
-                    return state.hexValue.Equals(actualAsBigInteger) || state.decimalValue.Equals(actualAsBigInteger);
-                });
+                    var (hexValue, decimalValue) = state;
+                    return hexValue.Equals(actualAsBigInteger) || decimalValue.Equals(actualAsBigInteger);
+                },
+                validOnly,
+                storeLocation,
+                storeName);
         }
 
-        public unsafe X509Certificate2Collection FindByThumbprint(byte[] thumbPrint)
-        {
-            fixed (byte* pThumbPrint = thumbPrint)
-            {
-                var blob = new Interop.CRYPTOAPI_BLOB(thumbPrint.Length, pThumbPrint);
-                return FindCore<object>(Interop.CertFindType.CERT_FIND_HASH, &blob);
-            }
-        }
-
-        private unsafe X509Certificate2Collection FindCore<TState>(
-            TState state,
-            Func<TState, Interop.SafeCertContextHandle, bool> filter)
-        {
-            return this.FindCore(Interop.CertFindType.CERT_FIND_ANY, null, state, filter);
-        }
-
-        private unsafe X509Certificate2Collection FindCore<TState>(
-            Interop.CertFindType dwFindType,
-            void* pvFindPara,
-            TState state = default!,
-            Func<TState, Interop.SafeCertContextHandle, bool>? filter = null,
+        public unsafe IList<IX509Certificate> FindByThumbprint(
+            byte[] thumbPrint,
             bool validOnly = false,
             StoreLocation storeLocation = StoreLocation.CurrentUser,
             StoreName storeName = StoreName.My)
         {
-            X509Certificate2Collection result = new();
+            fixed (byte* pThumbPrint = thumbPrint)
+            {
+                var blob = new Interop.CRYPTOAPI_BLOB(thumbPrint.Length, pThumbPrint);
+                return this.FindCore<object>(
+                    Interop.CertFindType.CERT_FIND_HASH,
+                    &blob,
+                    validOnly,
+                    storeLocation,
+                    storeName);
+            }
+        }
+
+        private unsafe IList<IX509Certificate> FindCore<TState>(
+            TState state,
+            Func<TState, Interop.SafeCertContextHandle, bool> filter,
+            bool validOnly,
+            StoreLocation storeLocation,
+            StoreName storeName)
+        {
+            return this.FindCore(
+                Interop.CertFindType.CERT_FIND_ANY,
+                null,
+                validOnly,
+                storeLocation,
+                storeName,
+                state,
+                filter);
+        }
+
+        private unsafe IList<IX509Certificate> FindCore<TState>(
+            Interop.CertFindType dwFindType,
+            void* pvFindPara,
+            bool validOnly,
+            StoreLocation storeLocation,
+            StoreName storeName,
+            TState state = default!,
+            Func<TState, Interop.SafeCertContextHandle, bool>? filter = null)
+        {
+            List<IX509Certificate> result = new();
 
             var certStore = storeLocation switch
             {
@@ -80,10 +127,9 @@
                 while (Interop.Libcapi20.CertFindCertificateInStore(store, dwFindType, pvFindPara, ref safeCertContextHandle))
                 {
                     if (filter != null && !filter(state, safeCertContextHandle))
+                    {
                         continue;
-
-                    // var ptr = safeCertContextHandle.DangerousGetHandle();
-                    // var c = new X509Certificate(ptr);
+                    }
 
                     var pCertContext = *safeCertContextHandle.CertContext;
                     byte[] pbBlob = new byte[pCertContext.cbCertEncoded];
@@ -102,7 +148,8 @@
                         }
                     }
 
-                    result.Add(certificate);
+                    var x509Certificate = new X509CertificateWrapper(safeCertContextHandle.Duplicate(), certificate);
+                    result.Add(x509Certificate);
                 }
             }
 
@@ -163,31 +210,45 @@
             return data;
         }
 
-        internal unsafe Interop.SafeCertContextHandle FindByThumbprint1(byte[] thumbPrint)
+        public interface IX509Certificate
         {
-            fixed (byte* pThumbPrint = thumbPrint)
+            IntPtr CertificateHandle { get; }
+
+            bool ContainsPrivateKey { get; }
+
+            X509Certificate2 X509Certificate2 { get; }
+        }
+
+        public class X509CertificateWrapper : IDisposable, IX509Certificate
+        {
+            private Interop.SafeCertContextHandle _handle;
+
+            public X509Certificate2 X509Certificate2 { get; }
+
+            internal X509CertificateWrapper(Interop.SafeCertContextHandle handle, X509Certificate2 x509Certificate2)
             {
-                var blob = new Interop.CRYPTOAPI_BLOB(thumbPrint.Length, pThumbPrint);
-                void* pvFindPara = &blob;
-                X509Certificate2Collection result = new();
+                this._handle = handle ?? throw new ArgumentNullException(nameof(handle));
+                this.X509Certificate2 = x509Certificate2 ?? throw new ArgumentNullException(nameof(x509Certificate2));
+            }
 
-                var certStore = StoreLocation.CurrentUser switch
-                {
-                    StoreLocation.CurrentUser => Interop.CertStoreFlags.CERT_SYSTEM_STORE_CURRENT_USER,
-                    StoreLocation.LocalMachine => Interop.CertStoreFlags.CERT_SYSTEM_STORE_LOCAL_MACHINE,
-               };
+            public void Dispose()
+            {
+                this.Dispose(true);
+                GC.SuppressFinalize(this);
+            }
 
-                Interop.SafeCertContextHandle? safeCertContextHandle = null;
-                using (var store = CertOpenStore(StoreName.My, certStore))
+            protected virtual void Dispose(bool disposing)
+            {
+                if (disposing)
                 {
-                    while (Interop.Libcapi20.CertFindCertificateInStore(store, Interop.CertFindType.CERT_FIND_HASH, pvFindPara, ref safeCertContextHandle))
-                    {
-                        return safeCertContextHandle;
-                    }
+                    _handle.Dispose();
+                    X509Certificate2.Dispose();
                 }
             }
 
-            throw new InvalidOperationException();
+            public IntPtr CertificateHandle => this._handle.DangerousGetHandle();
+
+            public bool ContainsPrivateKey => this._handle.ContainsPrivateKey;
         }
     }
 }

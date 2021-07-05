@@ -9,35 +9,31 @@
 
     public partial class LinuxCryptoApi
     {
-        public byte[] MakeSignature(X509Certificate2 certificate, byte[] content)
+        public byte[] MakeSignature(IX509Certificate certificate, byte[] content)
         {
-            SafeProvHandle hProv = SafeProvHandle.InvalidHandle;
-            var fCallerFreeProv = false;
-
-            SafeHashHandle hHash = SafeHashHandle.InvalidHandle;
-
             try
             {
-                var certContext = FindByThumbprint1(Convert.FromHexString("5AED7061564832AAFB6E00E759C4651263004EAD"));
+                var certContext = new Interop.SafeCertContextHandle();
+                certContext.SetHandle(certificate.CertificateHandle);
 
                 if (!Interop.Libcapi20.CryptAcquireCertificatePrivateKey(
                     certContext,
                     Interop.Libcapi20.CryptAcquireCertificatePrivateKeyFlags.CRYPT_ACQUIRE_COMPARE_KEY_FLAG,
                     IntPtr.Zero,
-                    out hProv,
+                    out SafeProvHandle hProv,
                     out var dwKeySpec,
-                    out fCallerFreeProv))
+                    out _))
                 {
                     throw Marshal.GetLastWin32Error().ToCryptographicException();
                 }
 
-                var hashAlgorithmId = GetHashAlgorithmId(certificate.PublicKey.Oid.Value);
+                var hashAlgorithmId = GetHashAlgorithmId(certificate.X509Certificate2.PublicKey.Oid.Value);
                 if (!Interop.Libcapi20.CryptCreateHash(
                     hProv,
                     hashAlgorithmId,
                     SafeKeyHandle.InvalidHandle,
                     Interop.Libcapi20.CryptCreateHashFlags.None,
-                    out hHash))
+                    out SafeHashHandle hHash))
                 {
                     throw Marshal.GetLastWin32Error().ToCryptographicException();
                 }
@@ -51,7 +47,7 @@
                     throw Marshal.GetLastWin32Error().ToCryptographicException();
                 }
 
-                int dwSigLen = 0;
+                var dwSigLen = 0;
                 if (!Interop.Libcapi20.CryptSignHash(
                     hHash,
                     (Interop.Libcapi20.KeySpec)dwKeySpec,

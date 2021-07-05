@@ -30,7 +30,7 @@
             return hProv;
         }
 
-        private static HashProvider CreateHashProvider(SafeProvHandle providerHandle, int calgHash)
+        private static HashHandleWrapper CreateHashProvider(SafeProvHandle providerHandle, int calgHash)
         {
             if (!Interop.Libcapi20.CryptCreateHash(
                 providerHandle,
@@ -62,12 +62,12 @@
                 throw new PlatformNotSupportedException();
             }
 
-            return new HashProvider(dwHashSize, hHash);
+            return new HashHandleWrapper(dwHashSize, hHash);
         }
 
-        internal class HashProvider : IDisposable
+        internal class HashHandleWrapper : IDisposable
         {
-            public HashProvider(int hashSizeInBytes, SafeHashHandle hashHandle)
+            public HashHandleWrapper(int hashSizeInBytes, SafeHashHandle hashHandle)
             {
                 this.HashSizeInBytes = hashSizeInBytes;
                 this.HashHandle = hashHandle;
@@ -79,7 +79,7 @@
 
             public void Dispose()
             {
-                HashHandle.Dispose();
+                this.HashHandle.Dispose();
             }
         }
     }

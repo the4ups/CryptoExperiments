@@ -9,13 +9,13 @@
 
     public partial class LinuxCryptoApi
     {
-        public byte[] Encrypt(X509Certificate2 certificate, byte[] document)
+        public byte[] Encrypt(IX509Certificate certificate, byte[] document)
         {
-            var certificateContext = Interop.Libcapi20.CertCreateCertificateContext(
-                Interop.CertEncodingType.All, certificate.RawData, certificate.RawData.Length);
+            var certContext = new Interop.SafeCertContextHandle();
+            certContext.SetHandle(certificate.CertificateHandle);
 
             // 0) Инициализация параметров
-            var encryptionAlgorithm = this.GetEncodeAlgorithmOid(certificate.PublicKey.Oid);
+            var encryptionAlgorithm = this.GetEncodeAlgorithmOid(certificate.X509Certificate2.PublicKey.Oid);
 
             var pParams = new Interop.Libcapi20.CRYPT_ENCRYPT_MESSAGE_PARA();
 
@@ -29,7 +29,7 @@
                 if (!Interop.Libcapi20.CryptEncryptMessage(
                     ref pParams,
                     1,
-                    new[] { certificateContext.DangerousGetHandle() },
+                    new[] { certContext.DangerousGetHandle() },
                     document,
                     document.Length,
                     null,
@@ -42,7 +42,7 @@
                 if (!Interop.Libcapi20.CryptEncryptMessage(
                     ref pParams,
                     1,
-                    new[] { certificateContext.DangerousGetHandle() },
+                    new[] { certContext.DangerousGetHandle() },
                     document,
                     document.Length,
                     result,
